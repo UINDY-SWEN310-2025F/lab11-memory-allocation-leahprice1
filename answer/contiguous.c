@@ -51,6 +51,28 @@ void firstFit(int nSeg, int nProc, int segSize[], int segUsed[], int segStart[],
     printf("\n--- FIRST FIT ---\n");
     //@TODO
 
+    int occupied[MAX]={0};
+
+    for(int i=0;i<nSeg;i++) 
+        if(segUsed[i] > 0) 
+            occupied[i] = 1;
+
+    for(int i=0;i<nProc;i++) 
+        alloc[i].partition = -1;
+
+    for(int p=0; p<nProc; p++){
+        for(int s=0; s<nSeg; s++){
+            if(!occupied[s] && segSize[s] >= alloc[p].size){
+                alloc[p].partition = s;
+                alloc[p].start = segStart[s];
+                alloc[p].end   = segStart[s] + alloc[p].size;
+                occupied[s] = 1;
+                segUsed[s] = alloc[p].size;
+                break;
+            }
+        }
+    }
+
     printSummary(nSeg, nProc, segSize, segUsed, segStart, occupied, alloc);
 }
 
@@ -58,6 +80,38 @@ void firstFit(int nSeg, int nProc, int segSize[], int segUsed[], int segStart[],
 void bestFit(int nSeg, int nProc, int segSize[], int segUsed[], int segStart[], AllocationInfo alloc[]) {
     printf("\n--- BEST FIT ---\n");
     //@TODO
+
+     int occupied[MAX]={0};
+
+    for(int i=0;i<nSeg;i++) 
+        if(segUsed[i] > 0) 
+            occupied[i] = 1;
+
+    for(int i=0;i<nProc;i++) 
+        alloc[i].partition = -1;
+
+    for(int p=0; p<nProc; p++){
+        int bestIndex = -1;
+        int bestDiff = 999999999; 
+
+        for(int s=0; s<nSeg; s++){
+            if(!occupied[s] && segSize[s] >= alloc[p].size){
+                int diff = segSize[s] - alloc[p].size;
+                if(diff < bestDiff){
+                    bestDiff = diff;
+                    bestIndex = s;
+                }
+            }
+        }
+
+        if(bestIndex != -1){
+            alloc[p].partition = bestIndex;
+            alloc[p].start = segStart[bestIndex];
+            alloc[p].end   = segStart[bestIndex] + alloc[p].size;
+            occupied[bestIndex] = 1;
+            segUsed[bestIndex] = alloc[p].size;
+        }
+    }
     
     printSummary(nSeg, nProc, segSize, segUsed, segStart, occupied, alloc);
 }
